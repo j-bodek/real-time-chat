@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'livechatapp.wsgi.application'
+
+#setting asgi application
+ASGI_APPLICATION = "livechatapp.asgi.application"
 
 
 # Database
