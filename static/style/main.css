@@ -5,7 +5,67 @@ body {
 }
 
 .main_section {
-    display: block;
+    position: absolute;
     width: 100%;
     height: 100%;
+}
+
+.chat_section {
+    height: 90%;
+    width: 800px;
+    padding-top: 3%;
+    margin: auto;
+}
+
+button {
+    width: 20%;
+    height: 20%;
+}
+
+input {
+    width: 58%;
+    height: 20%;
+}
+
+.chat_box {
+    width: 800px;
+    height: 75%;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    background-color: teal;
+    border: 2px solid black;
+    margin: auto;
+    overflow-y: scroll;
+}
+
+::-webkit-scrollbar {
+    width: 0;
+    /* Remove scrollbar space */
+    background: transparent;
+    /* Optional: just make scrollbar invisible */
+}
+
+
+.messages {
+    padding: 0.5rem;
+    width: 100%;
+}
+
+.messages>li {
+    clear: both;
+    max-width: 80%;
+    list-style-type: none;
+    text-align: left;
+    background-color: greenyellow;
+    margin: 0.3rem 0 0.3rem 0;
+    padding: 0.3rem;
+    border-radius: 10px;
+}
+
+.stranger {
+    float: left;
+}
+
+.you {
+    float: right;
 }
