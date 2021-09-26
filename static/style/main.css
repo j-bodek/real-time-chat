@@ -1,0 +1,11 @@
+body {
+    padding: 0;
+    margin: 0;
+    background-color: gray;
+}
+
+.main_section {
+    display: block;
+    width: 100%;
+    height: 100%;
+}

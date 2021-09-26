@@ -53,11 +53,14 @@ class ChatConsumer(WebsocketConsumer):
         message = event['message'][8:]
 
         if self.scope['session']['seed'] == int(sender):
+            message_type = 'sender'
             message = 'You: ' + message
         else:
+            message_type = 'receiver'
             message = 'Stranger: ' + message
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
+            'message_type': message_type,
             'message': message
         }))
