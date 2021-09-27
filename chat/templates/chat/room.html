@@ -6,6 +6,7 @@
 <div class='chat_section'>
     <div class='chat_box'>
         <ul id="chat-log" class="messages">
+            <li id='typing_info' class='hide' style='color: #ccc; display:none'>User Typing...</li>
         </ul>
     </div>
     <button style="border-bottom-left-radius: 20px;">Leave</button>
@@ -32,13 +33,47 @@
         + '/'
     );
 
+    // display typing info if user is typing
+    let show_typing_info = function(){
+        let classname = document.querySelector('#typing_info').className
+
+        if (classname == 'hide'){
+            // if typing_info is hidden change class to show
+            document.querySelector('#typing_info').className = 'show';
+            document.querySelector('#typing_info').style.display = 'block';
+            // Set timeout 
+            typing_timeout = window.setTimeout(function(){
+            document.querySelector('#typing_info').className = 'hide';
+            document.querySelector('#typing_info').style.display = 'none';
+            }, 1000);
+
+        }else{
+            // Clear existiong timeout
+            window.clearTimeout(typing_timeout)
+            // And set new one
+            typing_timeout = window.setTimeout(function(){
+            document.querySelector('#typing_info').className = 'hide';
+            document.querySelector('#typing_info').style.display = 'none';
+            }, 1000);
+        }
+    }
+
+    var typing_timeout;
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        console.log(data.message_type);
-        let message = document.createElement("li")
-        message.setAttribute("class", data.message_type);
-        message.appendChild(document.createTextNode(data.message));
-        document.querySelector('#chat-log').appendChild(message);;
+        if (data.message_type == 'typing'){
+            // if message type is typing show typing message
+            show_typing_info()
+        }else{
+            let typing_info = document.querySelector('#typing_info')
+            let message = document.createElement("li")
+            message.setAttribute("class", data.message_type);
+            message.appendChild(document.createTextNode(data.message));
+            document.querySelector('#chat-log').appendChild(message);
+            // append typing info after new message and set display to none
+            typing_info.style.display = 'none'
+            document.querySelector('#chat-log').appendChild(typing_info);
+        }
     };
 
     chatSocket.onclose = function(e) {
@@ -49,6 +84,11 @@
     document.querySelector('#chat-message-input').onkeyup = function(e) {
         if (e.keyCode === 13) {  // enter, return
             document.querySelector('#chat-message-submit').click();
+        } else{ // different then enter
+            
+            chatSocket.send(JSON.stringify({
+            'typing': true
+        }));
         }
     };
 
@@ -60,5 +100,8 @@
         }));
         messageInputDom.value = '';
     };
+
+
+
 </script>
 {% endblock js %}

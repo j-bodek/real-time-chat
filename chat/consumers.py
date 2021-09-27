@@ -33,18 +33,34 @@ class ChatConsumer(WebsocketConsumer):
     # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        user = self.scope['session']['seed']
-        message = str(user) + message
 
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-            }
-        )
+        try:
+            typing = text_data_json['typing']
+            user = self.scope['session']['seed']
+
+            # Send typing info
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'typing',
+                    'message': user,
+                }
+            )
+            
+
+        except:
+            message = text_data_json['message']
+            user = self.scope['session']['seed']
+            message = str(user) + message
+
+            # Send message to room group
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                }
+            )
 
     # Receive message from room group
     def chat_message(self, event):
@@ -62,3 +78,14 @@ class ChatConsumer(WebsocketConsumer):
             'message_type': message_type,
             'message': message
         }))
+
+
+    # Display if user is typing
+    def typing(self, event):
+
+        if self.scope['session']['seed'] != int(event['message']):
+            # Display that user is typing
+            self.send(text_data=json.dumps({
+                'message_type': 'typing',
+                'message': True
+            }))

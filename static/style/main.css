@@ -84,6 +84,12 @@ button:hover {
     padding: 0.6rem;
 }
 
+.messages>#typing_info {
+    position: -webkit-sticky;
+    position: sticky;
+    bottom: 0;
+}
+
 .receiver {
     float: left;
     background-color: #313335;
