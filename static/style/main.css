@@ -84,14 +84,14 @@ button:hover {
     padding: 0.6rem;
 }
 
-.stranger {
+.receiver {
     float: left;
     background-color: #313335;
     color: white;
     border-radius: 0 10px 10px 10px;
 }
 
-.you {
+.sender {
     float: right;
     background-color: #dead59;
     color: white;

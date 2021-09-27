@@ -10,17 +10,14 @@
 </head>
 <body>
     <div class='main_section'>
-        <div class='chat_section'>
-        <div class='chat_box'>
-            <ul class="messages">
-                <li class='stranger'>hello</li>
-                <li class='you'>hi</li>
-            </ul>
-        </div>
-        <button style="border-bottom-left-radius: 20px;">Leave</button>
-        <textarea name="" id="" cols="30" rows="10"></textarea>
-        <button style='border-bottom-right-radius: 20px;'>Send</button>
+
+        {% block content %} 
+
+        {% endblock content %}
+        
     </div>
-    </div>
+
+    {% block js %}
+    {% endblock js %}
 </body>
 </html>
