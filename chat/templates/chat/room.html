@@ -12,9 +12,9 @@
             <li id='typing_info' class='hide' style='color: #ccc; display:none'>User Typing...</li>
         </ul>
     </div>
-    <button id='leave-chat' name='leave' style="border-bottom-left-radius: 20px;">Leave</button>
-    <textarea id="chat-message-input" name="" id="" cols="30" rows="10"></textarea>
-    <button id="chat-message-submit" style='border-bottom-right-radius: 20px;'>Send</button>
+    <button id='leave-chat' disabled='true' name='leave' style="border-bottom-left-radius: 20px;">Leave</button>
+    <textarea id="chat-message-input" disabled='true' name="" id="" cols="30" rows="10"></textarea>
+    <button id="chat-message-submit" disabled='true' style='border-bottom-right-radius: 20px;'>Send</button>
 </div>
 
 <!-- <textarea id="chat-log" cols="100" rows="20"></textarea><br>
@@ -62,15 +62,27 @@
     }
 
 
+    let display_waiting = function(){
+        document.getElementById('chat-message-input').disabled = true;
+        document.getElementById('leave-chat').disabled = true;
+        document.getElementById('chat-message-submit').disabled = true;
+
+        document.getElementById('user_info').innerHTML = 'Waiting for stranger...';
+    }
+
+    let display_disconnect = function(){
+
+    }
+
+
     let typing_timeout;
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        console.log(data.message_type);
         if (data.message_type == 'typing'){
             // if message type is typing show typing message
             show_typing_info()
+
         }else if(data.message_type == 'sender' || data.message_type == 'receiver'){
-            console.log('ji');
             // if user send message
             let typing_info = document.querySelector('#typing_info')
             let message = document.createElement("li")
@@ -80,9 +92,16 @@
             // append typing info after new message and set display to none
             typing_info.style.display = 'none'
             document.querySelector('#chat-log').appendChild(typing_info);
+
         }else if(data.message_type == 'connected_with_stranger'){
-            // if connected with stranger change text 
-            document.getElementById('user_info').innerHTML = 'Connected with stranger'
+            // if connected with stranger change text and enable textarea
+            document.getElementById('chat-message-input').disabled = false;
+            document.getElementById('leave-chat').disabled = false;
+            document.getElementById('chat-message-submit').disabled = false;
+            document.getElementById('user_info').innerHTML = 'Connected with stranger';
+        }else if(data.message_type == 'disconnected_with_stranger'){
+            document.getElementById('leave-chat').innerHTML = 'Connect to new stranger'
+            document.getElementById('leave-chat').name = 'connect_new'
         }
     };
 
@@ -130,6 +149,8 @@
         }else if(type == 'connect_new'){
             e.target.name = 'leave'
             e.target.innerHTML = 'Leave'
+            // Display waiting status
+            display_waiting()
             // Send websocket that user wants to connect with user
             chatSocket.send(JSON.stringify({
             'action': 'connect_new'

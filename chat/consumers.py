@@ -17,7 +17,7 @@ def random_with_N_digits(n):
 
 
 class UserInfos():
-    def connected_with_stranger(self):
+    def send_connected_info(self):
         async_to_sync(self.channel_layer.send)(
         self.channel_name,
         {
@@ -33,20 +33,30 @@ class UserInfos():
     def connect_with_user(self):
 
         if len(active_users) < 1:
-            print('added')
             active_users.append(self.channel_name)
+
         elif len(active_users) >= 1:
-            print('paired')
             stranger = active_users[0]
             active_users.remove(stranger)
+
             paired_users[stranger] = self.channel_name
             paired_users[self.channel_name] = stranger
-            print(paired_users)
-            UserInfos.connected_with_stranger(self)
+            UserInfos.send_connected_info(self)
 
 
     def disconnect_with_stranger(self):
-        pass
+        stranger = paired_users[self.channel_name]
+        # Send stranger info that you disconnected
+        async_to_sync(self.channel_layer.send)(
+            stranger,
+            {
+                'type': 'disconnected_with_stranger',
+            }
+        )
+
+        del paired_users[stranger]
+        del paired_users[self.channel_name]
+
 
     def send_typing_info(self):
         user = self.scope['session']['seed']
@@ -131,7 +141,7 @@ class ChatConsumer(WebsocketConsumer):
                 #send typing info
                UserInfos.send_typing_info(self)
             if text_data_json['action'] == 'leave':
-                self.disconnect(self, 'close_code')
+                UserInfos.disconnect_with_stranger(self)
             if text_data_json['action'] == 'connect_new':
                 UserInfos.connect_with_user(self)
             
@@ -174,9 +184,13 @@ class ChatConsumer(WebsocketConsumer):
 
 
     def connected_with_stranger(self, event):
-
         self.send(text_data=json.dumps({
             'message_type': 'connected_with_stranger',
+        }))
+
+    def disconnected_with_stranger(self, event):
+        self.send(text_data=json.dumps({
+            'message_type': 'disconnected_with_stranger',
         }))
 
     
