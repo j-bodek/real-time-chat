@@ -5,11 +5,14 @@
 
 <div class='chat_section'>
     <div class='chat_box'>
+        
         <ul id="chat-log" class="messages">
+            <li id='user_info' class='user_info'>Waiting for stranger...</li>
+
             <li id='typing_info' class='hide' style='color: #ccc; display:none'>User Typing...</li>
         </ul>
     </div>
-    <button style="border-bottom-left-radius: 20px;">Leave</button>
+    <button id='leave-chat' style="border-bottom-left-radius: 20px;">Leave</button>
     <textarea id="chat-message-input" name="" id="" cols="30" rows="10"></textarea>
     <button id="chat-message-submit" style='border-bottom-right-radius: 20px;'>Send</button>
 </div>
@@ -58,13 +61,17 @@
         }
     }
 
-    var typing_timeout;
+
+    let typing_timeout;
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
+        console.log(data.message_type);
         if (data.message_type == 'typing'){
             // if message type is typing show typing message
             show_typing_info()
-        }else{
+        }else if(data.message_type == 'sender' || data.message_type == 'receiver'){
+            console.log('ji');
+            // if user send message
             let typing_info = document.querySelector('#typing_info')
             let message = document.createElement("li")
             message.setAttribute("class", data.message_type);
@@ -73,6 +80,9 @@
             // append typing info after new message and set display to none
             typing_info.style.display = 'none'
             document.querySelector('#chat-log').appendChild(typing_info);
+        }else if(data.message_type == 'connected_with_stranger'){
+            // if connected with stranger change text 
+            document.getElementById('user_info').innerHTML = 'Connected with stranger'
         }
     };
 

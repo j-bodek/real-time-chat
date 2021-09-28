@@ -4,17 +4,34 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import random
 from channels.layers import get_channel_layer
+# from . user_functions import waiting_for_stranger
 
 active_users = []
 
-paired_users = {
-
-}
+paired_users = {}
 
 def random_with_N_digits(n):
     range_start = 10**(n-1)
     range_end = (10**n)-1
     return random.randint(range_start, range_end)
+
+
+class UserInfos():
+    def connected_with_stranger(self):
+        async_to_sync(self.channel_layer.send)(
+        self.channel_name,
+        {
+            'type': 'connected_with_stranger',
+        })
+        async_to_sync(self.channel_layer.send)(
+        paired_users[self.channel_name],
+        {
+            'type': 'connected_with_stranger',
+        })
+
+
+
+
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -25,13 +42,14 @@ class ChatConsumer(WebsocketConsumer):
         if len(active_users) < 1:
             print('added')
             active_users.append(self.channel_name)
-        else:
+        elif len(active_users) >= 1:
             print('paired')
             stranger = active_users[0]
             active_users.remove(stranger)
             paired_users[stranger] = self.channel_name
             paired_users[self.channel_name] = stranger
             print(paired_users)
+            UserInfos.connected_with_stranger(self)
 
 
         # Join room group
@@ -44,28 +62,25 @@ class ChatConsumer(WebsocketConsumer):
 
 
 
-
-
-
-
     def disconnect(self, close_code):
+        #clear database
+        paired_users = {}
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name,
             self.channel_name
         )
 
+
     # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        channel_layer = get_channel_layer()
-        print(self.channel_layer)
 
         try:
             typing = text_data_json['typing']
             user = self.scope['session']['seed']
 
-            # Send typing info
+            # Send typing info to connected user
             async_to_sync(self.channel_layer.send)(
                 paired_users[self.channel_name],
                 {
@@ -73,14 +88,23 @@ class ChatConsumer(WebsocketConsumer):
                     'message': user,
                 }
             )
+            # Send typing info to yourself
+            async_to_sync(self.channel_layer.send)(
+                self.channel_name,
+                {
+                    'type': 'typing',
+                    'message': user,
+                }
+            )
             
+
 
         except:
             message = text_data_json['message']
             user = self.scope['session']['seed']
             message = str(user) + message
 
-            # Send message to room group
+            # Send message to connected user
             async_to_sync(self.channel_layer.send)(
                 paired_users[self.channel_name],
                 {
@@ -88,6 +112,7 @@ class ChatConsumer(WebsocketConsumer):
                     'message': message,
                 }
             )
+            # Send message to yourself
             async_to_sync(self.channel_layer.send)(
                 self.channel_name,
                 {
@@ -95,6 +120,8 @@ class ChatConsumer(WebsocketConsumer):
                     'message': message,
                 }
             )
+
+
 
     # Receive message from room group
     def chat_message(self, event):
@@ -123,3 +150,14 @@ class ChatConsumer(WebsocketConsumer):
                 'message_type': 'typing',
                 'message': True
             }))
+
+
+
+
+    def connected_with_stranger(self, event):
+
+        self.send(text_data=json.dumps({
+            'message_type': 'connected_with_stranger',
+        }))
+
+    

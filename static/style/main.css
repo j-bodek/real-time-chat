@@ -103,3 +103,12 @@ button:hover {
     color: white;
     border-radius: 10px 0 10px 10px;
 }
+
+.user_info {
+    float: left;
+    color: #ccc;
+    font-size: 22px;
+    margin-left: 15px;
+    margin-top: 15px;
+    width: auto;
+}
