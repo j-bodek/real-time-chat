@@ -30,15 +30,8 @@ class UserInfos():
         })
 
 
+    def connect_with_user(self):
 
-
-
-class ChatConsumer(WebsocketConsumer):
-    def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
-        self.scope['session']['seed'] = random_with_N_digits(8)
-        
         if len(active_users) < 1:
             print('added')
             active_users.append(self.channel_name)
@@ -52,6 +45,60 @@ class ChatConsumer(WebsocketConsumer):
             UserInfos.connected_with_stranger(self)
 
 
+    def disconnect_with_stranger(self):
+        pass
+
+    def send_typing_info(self):
+        user = self.scope['session']['seed']
+
+        # Send typing info to connected user
+        async_to_sync(self.channel_layer.send)(
+            paired_users[self.channel_name],
+            {
+                'type': 'typing',
+                'message': user,
+            }
+        )
+        # Send typing info to yourself
+        async_to_sync(self.channel_layer.send)(
+            self.channel_name,
+            {
+                'type': 'typing',
+                'message': user,
+            }
+        )
+
+    def send_user_message(self, text_data_json):
+        message = text_data_json['message']
+        user = self.scope['session']['seed']
+        message = str(user) + message
+
+        # Send message to connected user
+        async_to_sync(self.channel_layer.send)(
+            paired_users[self.channel_name],
+            {
+                'type': 'chat_message',
+                'message': message,
+            }
+        )
+        # Send message to yourself
+        async_to_sync(self.channel_layer.send)(
+            self.channel_name,
+            {
+                'type': 'chat_message',
+                'message': message,
+            }
+        )
+
+
+
+
+class ChatConsumer(WebsocketConsumer):
+    def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = 'chat_%s' % self.room_name
+        self.scope['session']['seed'] = random_with_N_digits(8)
+    
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
@@ -59,6 +106,9 @@ class ChatConsumer(WebsocketConsumer):
         )
 
         self.accept()
+
+        #if join room connect with stranger
+        UserInfos.connect_with_user(self)
 
 
 
@@ -77,49 +127,18 @@ class ChatConsumer(WebsocketConsumer):
         text_data_json = json.loads(text_data)
 
         try:
-            typing = text_data_json['typing']
-            user = self.scope['session']['seed']
-
-            # Send typing info to connected user
-            async_to_sync(self.channel_layer.send)(
-                paired_users[self.channel_name],
-                {
-                    'type': 'typing',
-                    'message': user,
-                }
-            )
-            # Send typing info to yourself
-            async_to_sync(self.channel_layer.send)(
-                self.channel_name,
-                {
-                    'type': 'typing',
-                    'message': user,
-                }
-            )
+            if text_data_json['action'] == 'typing':
+                #send typing info
+               UserInfos.send_typing_info(self)
+            if text_data_json['action'] == 'leave':
+                self.disconnect(self, 'close_code')
+            if text_data_json['action'] == 'connect_new':
+                UserInfos.connect_with_user(self)
             
-
-
+            
         except:
-            message = text_data_json['message']
-            user = self.scope['session']['seed']
-            message = str(user) + message
-
-            # Send message to connected user
-            async_to_sync(self.channel_layer.send)(
-                paired_users[self.channel_name],
-                {
-                    'type': 'chat_message',
-                    'message': message,
-                }
-            )
-            # Send message to yourself
-            async_to_sync(self.channel_layer.send)(
-                self.channel_name,
-                {
-                    'type': 'chat_message',
-                    'message': message,
-                }
-            )
+            # Send user message
+            UserInfos.send_user_message(self, text_data_json)
 
 
 

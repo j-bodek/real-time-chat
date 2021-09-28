@@ -12,7 +12,7 @@
             <li id='typing_info' class='hide' style='color: #ccc; display:none'>User Typing...</li>
         </ul>
     </div>
-    <button id='leave-chat' style="border-bottom-left-radius: 20px;">Leave</button>
+    <button id='leave-chat' name='leave' style="border-bottom-left-radius: 20px;">Leave</button>
     <textarea id="chat-message-input" name="" id="" cols="30" rows="10"></textarea>
     <button id="chat-message-submit" style='border-bottom-right-radius: 20px;'>Send</button>
 </div>
@@ -97,7 +97,7 @@
         } else{ // different then enter
             
             chatSocket.send(JSON.stringify({
-            'typing': true
+            'action': 'typing'
         }));
         }
     };
@@ -110,6 +110,33 @@
         }));
         messageInputDom.value = '';
     };
+
+
+    document.querySelector('#leave-chat').onclick = (e)=>{
+        let type = e.target.name;
+        
+        if(type == 'leave'){
+            e.target.name = 'ensure'
+            e.target.innerHTML = 'Are you sure?'
+
+        }else if(type == 'ensure'){
+            e.target.name = 'connect_new'
+            e.target.innerHTML = 'Connect to new stranger'
+            // Send websocket that user wants to disconnect with stranger
+            chatSocket.send(JSON.stringify({
+            'action': 'leave'
+            }));
+
+        }else if(type == 'connect_new'){
+            e.target.name = 'leave'
+            e.target.innerHTML = 'Leave'
+            // Send websocket that user wants to connect with user
+            chatSocket.send(JSON.stringify({
+            'action': 'connect_new'
+            }));
+
+        }
+    }
 
 
 
