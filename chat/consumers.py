@@ -3,6 +3,13 @@ import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import random
+from channels.layers import get_channel_layer
+
+active_users = []
+
+paired_users = {
+
+}
 
 def random_with_N_digits(n):
     range_start = 10**(n-1)
@@ -13,7 +20,19 @@ class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-        self.scope["session"]["seed"] = random_with_N_digits(8)
+        self.scope['session']['seed'] = random_with_N_digits(8)
+        
+        if len(active_users) < 1:
+            print('added')
+            active_users.append(self.channel_name)
+        else:
+            print('paired')
+            stranger = active_users[0]
+            active_users.remove(stranger)
+            paired_users[stranger] = self.channel_name
+            paired_users[self.channel_name] = stranger
+            print(paired_users)
+
 
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
@@ -22,6 +41,12 @@ class ChatConsumer(WebsocketConsumer):
         )
 
         self.accept()
+
+
+
+
+
+
 
     def disconnect(self, close_code):
         # Leave room group
@@ -33,14 +58,16 @@ class ChatConsumer(WebsocketConsumer):
     # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
+        channel_layer = get_channel_layer()
+        print(self.channel_layer)
 
         try:
             typing = text_data_json['typing']
             user = self.scope['session']['seed']
 
             # Send typing info
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name,
+            async_to_sync(self.channel_layer.send)(
+                paired_users[self.channel_name],
                 {
                     'type': 'typing',
                     'message': user,
@@ -54,8 +81,15 @@ class ChatConsumer(WebsocketConsumer):
             message = str(user) + message
 
             # Send message to room group
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name,
+            async_to_sync(self.channel_layer.send)(
+                paired_users[self.channel_name],
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                }
+            )
+            async_to_sync(self.channel_layer.send)(
+                self.channel_name,
                 {
                     'type': 'chat_message',
                     'message': message,
