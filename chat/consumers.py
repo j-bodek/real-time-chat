@@ -8,11 +8,6 @@ from channels.layers import get_channel_layer
 from . models import PairedUser, ActiveUser
 # from . user_functions import waiting_for_stranger
 
-active_users = []
-
-paired_users = {}
-
-active_u = 0
 
 
 def random_with_N_digits(n):
@@ -22,6 +17,34 @@ def random_with_N_digits(n):
 
 
 class UserInfos():
+
+    def save_paired_user(user, stranger):
+        User = PairedUser()
+        User.user_id = user
+        User.stranger_id = stranger
+        User.save()
+        # stranger
+        Stranger = PairedUser()
+        Stranger.user_id = stranger
+        Stranger.stranger_id = user
+        Stranger.save()
+
+    def delete_paired_user(user, stranger):
+        User = PairedUser.objects.get(user_id=user)
+        User.delete()
+        # stranger
+        Stranger = PairedUser.objects.get(user_id=stranger)
+        Stranger.delete()
+
+    def save_active_user(user):
+        User = ActiveUser()
+        User.user_id = user
+        User.save()
+
+    def delete_active_user(user):
+        User = ActiveUser.objects.get(user_id=user)
+        User.delete()
+
 
     def send_user_number(self):
         async_to_sync(self.channel_layer.group_send)(
@@ -37,7 +60,7 @@ class UserInfos():
             'type': 'connected_with_stranger',
         })
         async_to_sync(self.channel_layer.send)(
-        paired_users[self.channel_name],
+        PairedUser.objects.get(user_id=self.channel_name).stranger_id,
         {
             'type': 'connected_with_stranger',
         })
@@ -45,27 +68,26 @@ class UserInfos():
 
     def connect_with_user(self):
 
-        if len(active_users) < 1:
-            active_users.append(self.channel_name)
+        if len(ActiveUser.objects.all()) < 1:
+            # Save waiting user to database
+            UserInfos.save_active_user(self.channel_name)
             
-
-        elif len(active_users) >= 1 and self.channel_name not in active_users:
-            print(active_users)
-            stranger = active_users[0]
-            active_users.remove(stranger)
-            print(active_users)
-
-            paired_users[stranger] = self.channel_name
-            paired_users[self.channel_name] = stranger
+        elif len(ActiveUser.objects.all()) >= 1 and self.channel_name not in ActiveUser.objects.all():
+            # get active user from database and delete him
+            stranger = ActiveUser.objects.first().user_id
+            UserInfos.delete_active_user(stranger)
+            # save connected pair to database
+            UserInfos.save_paired_user(self.channel_name, stranger)
+            # Send info that users are connected
             UserInfos.send_connected_info(self)
-            print(paired_users)
+          
 
 
     def disconnect_with_stranger(self):
 
         try:
             # if user has pair
-            stranger = paired_users[self.channel_name]
+            stranger = PairedUser.objects.get(user_id=self.channel_name).stranger_id
             # Send stranger info that you disconnected
             async_to_sync(self.channel_layer.send)(
                 stranger,
@@ -73,12 +95,13 @@ class UserInfos():
                     'type': 'disconnected_with_stranger',
                 }
             )
-            del paired_users[stranger]
-            del paired_users[self.channel_name]
+            
+            # delete disconnected pair from database
+            UserInfos.delete_paired_user(self.channel_name, stranger)
 
         except:
             #if user was in waiting room
-            active_users.remove(self.channel_name)
+            UserInfos.delete_active_user(self.channel_name)
 
 
     def send_typing_info(self):
@@ -86,7 +109,7 @@ class UserInfos():
 
         # Send typing info to connected user
         async_to_sync(self.channel_layer.send)(
-            paired_users[self.channel_name],
+            PairedUser.objects.get(user_id=self.channel_name).stranger_id,
             {
                 'type': 'typing',
                 'message': user,
@@ -108,7 +131,7 @@ class UserInfos():
 
         # Send message to connected user
         async_to_sync(self.channel_layer.send)(
-            paired_users[self.channel_name],
+            PairedUser.objects.get(user_id=self.channel_name).stranger_id,
             {
                 'type': 'chat_message',
                 'message': message,
