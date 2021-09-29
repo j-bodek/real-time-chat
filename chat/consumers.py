@@ -34,28 +34,38 @@ class UserInfos():
 
         if len(active_users) < 1:
             active_users.append(self.channel_name)
+            
 
-        elif len(active_users) >= 1:
+        elif len(active_users) >= 1 and self.channel_name not in active_users:
+            print(active_users)
             stranger = active_users[0]
             active_users.remove(stranger)
+            print(active_users)
 
             paired_users[stranger] = self.channel_name
             paired_users[self.channel_name] = stranger
             UserInfos.send_connected_info(self)
+            print(paired_users)
 
 
     def disconnect_with_stranger(self):
-        stranger = paired_users[self.channel_name]
-        # Send stranger info that you disconnected
-        async_to_sync(self.channel_layer.send)(
-            stranger,
-            {
-                'type': 'disconnected_with_stranger',
-            }
-        )
 
-        del paired_users[stranger]
-        del paired_users[self.channel_name]
+        try:
+            # if user has pair
+            stranger = paired_users[self.channel_name]
+            # Send stranger info that you disconnected
+            async_to_sync(self.channel_layer.send)(
+                stranger,
+                {
+                    'type': 'disconnected_with_stranger',
+                }
+            )
+            del paired_users[stranger]
+            del paired_users[self.channel_name]
+            
+        except:
+            #if user was in waiting room
+            active_users.remove(self.channel_name)
 
 
     def send_typing_info(self):

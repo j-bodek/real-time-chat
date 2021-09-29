@@ -68,11 +68,30 @@
         document.getElementById('chat-message-submit').disabled = true;
 
         document.getElementById('user_info').innerHTML = 'Waiting for stranger...';
+
+        // cleare chat log 
+        document.querySelector('#chat-log').innerHTML = `
+        <li id='user_info' class='user_info'>Waiting for stranger...</li>
+        <li id='typing_info' class='hide' style='color: #ccc; display:none'>User Typing...</li>
+        `;  
     }
 
     let display_disconnect = function(){
+        // change leave button to connect with new
+        document.getElementById('leave-chat').innerHTML = 'Connect to new stranger'
+        document.getElementById('leave-chat').name = 'connect_new'
 
+        // create disconnect info
+        let disconnect_info = document.createElement("li")
+        disconnect_info.appendChild(document.createTextNode('Stranger disconnected'));
+        disconnect_info.style.color = "red";
+        document.querySelector('#chat-log').appendChild(disconnect_info);
+
+        // disable input and submit
+        document.getElementById('chat-message-input').disabled = true;
+        document.getElementById('chat-message-submit').disabled = true;
     }
+
 
 
     let typing_timeout;
@@ -100,8 +119,7 @@
             document.getElementById('chat-message-submit').disabled = false;
             document.getElementById('user_info').innerHTML = 'Connected with stranger';
         }else if(data.message_type == 'disconnected_with_stranger'){
-            document.getElementById('leave-chat').innerHTML = 'Connect to new stranger'
-            document.getElementById('leave-chat').name = 'connect_new'
+            display_disconnect()
         }
     };
 
@@ -141,6 +159,11 @@
         }else if(type == 'ensure'){
             e.target.name = 'connect_new'
             e.target.innerHTML = 'Connect to new stranger'
+            // create disconnect info
+            let disconnect_info = document.createElement("li")
+            disconnect_info.appendChild(document.createTextNode('You disconnected with stranger'));
+            disconnect_info.style.color = "red";
+            document.querySelector('#chat-log').appendChild(disconnect_info);
             // Send websocket that user wants to disconnect with stranger
             chatSocket.send(JSON.stringify({
             'action': 'leave'
@@ -157,6 +180,14 @@
             }));
 
         }
+    }
+
+    // on refersh disconnect
+    window.onbeforeunload = function(e){
+        // Send websocket that user wants to disconnect with stranger
+        chatSocket.send(JSON.stringify({
+        'action': 'leave'
+        }));
     }
 
 
