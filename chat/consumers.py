@@ -4,11 +4,16 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import random
 from channels.layers import get_channel_layer
+
+from . models import PairedUser, ActiveUser
 # from . user_functions import waiting_for_stranger
 
 active_users = []
 
 paired_users = {}
+
+active_u = 0
+
 
 def random_with_N_digits(n):
     range_start = 10**(n-1)
@@ -17,6 +22,14 @@ def random_with_N_digits(n):
 
 
 class UserInfos():
+
+    def send_user_number(self):
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                'type':'display_number_of_users'
+            })
+
     def send_connected_info(self):
         async_to_sync(self.channel_layer.send)(
         self.channel_name,
@@ -62,7 +75,7 @@ class UserInfos():
             )
             del paired_users[stranger]
             del paired_users[self.channel_name]
-            
+
         except:
             #if user was in waiting room
             active_users.remove(self.channel_name)
@@ -114,6 +127,7 @@ class UserInfos():
 
 
 class ChatConsumer(WebsocketConsumer):
+    number_of_users = 0
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
@@ -129,6 +143,10 @@ class ChatConsumer(WebsocketConsumer):
 
         #if join room connect with stranger
         UserInfos.connect_with_user(self)
+
+        # send user number
+        UserInfos.send_user_number(self)
+        
 
 
 
@@ -204,3 +222,5 @@ class ChatConsumer(WebsocketConsumer):
         }))
 
     
+    def display_number_of_users(self, event):
+        print(event)
