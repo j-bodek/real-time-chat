@@ -112,3 +112,19 @@ button:hover {
     margin-top: 15px;
     width: auto;
 }
+
+.start_chat_btn {
+    position: absolute;
+    font-size: 18px;
+    top: calc(50% - 2rem);
+    left: calc(50% - 10rem);
+    padding: 2rem 4rem;
+    border-radius: 20px;
+    background-color: #EAEAEB;
+    cursor: pointer;
+}
+
+.start_chat_btn:hover {
+    background-color: #ACACAF;
+    transition: ease-in-out 0.1s;
+}

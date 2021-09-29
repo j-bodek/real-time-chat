@@ -150,9 +150,8 @@ class UserInfos():
 
 
 class ChatConsumer(WebsocketConsumer):
-    number_of_users = 0
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_name = 'room'
         self.room_group_name = 'chat_%s' % self.room_name
         self.scope['session']['seed'] = random_with_N_digits(8)
     
@@ -174,8 +173,6 @@ class ChatConsumer(WebsocketConsumer):
 
 
     def disconnect(self, close_code):
-        #clear database
-        paired_users = {}
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name,
