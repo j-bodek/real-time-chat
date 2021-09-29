@@ -9,3 +9,5 @@ class PairedUser(models.Model):
 class ActiveUser(models.Model):
     user_id = models.CharField(max_length=300, blank=True, null=True)
 
+class OnlineUsers(models.Model):
+    number = models.IntegerField()

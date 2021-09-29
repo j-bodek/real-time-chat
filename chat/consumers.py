@@ -5,8 +5,8 @@ from channels.generic.websocket import WebsocketConsumer
 import random
 from channels.layers import get_channel_layer
 
-from . models import PairedUser, ActiveUser
-# from . user_functions import waiting_for_stranger
+from . models import PairedUser, ActiveUser, OnlineUsers
+
 
 
 
@@ -125,26 +125,29 @@ class UserInfos():
         )
 
     def send_user_message(self, text_data_json):
-        message = text_data_json['message']
-        user = self.scope['session']['seed']
-        message = str(user) + message
+        try:
+            message = text_data_json['message']
+            user = self.scope['session']['seed']
+            message = str(user) + message
 
-        # Send message to connected user
-        async_to_sync(self.channel_layer.send)(
-            PairedUser.objects.get(user_id=self.channel_name).stranger_id,
-            {
-                'type': 'chat_message',
-                'message': message,
-            }
-        )
-        # Send message to yourself
-        async_to_sync(self.channel_layer.send)(
-            self.channel_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-            }
-        )
+            # Send message to connected user
+            async_to_sync(self.channel_layer.send)(
+                PairedUser.objects.get(user_id=self.channel_name).stranger_id,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                }
+            )
+            # Send message to yourself
+            async_to_sync(self.channel_layer.send)(
+                self.channel_name,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                }
+            )
+        except:
+            pass
 
 
 
@@ -168,6 +171,19 @@ class ChatConsumer(WebsocketConsumer):
 
         # send user number
         UserInfos.send_user_number(self)
+
+        # update number of online users
+        if OnlineUsers.objects.all():
+            users_number = OnlineUsers.objects.first().number + 1
+            online_users_number = OnlineUsers.objects.first()
+            online_users_number.number = users_number
+            online_users_number.save()
+            
+
+        else:
+            user_nubmer = OnlineUsers()
+            user_nubmer.number = 1
+            user_nubmer.save()
         
 
 
@@ -178,6 +194,14 @@ class ChatConsumer(WebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+
+        # update online user number
+
+        print('disconnect')
+        users_number = OnlineUsers.objects.first().number - 1
+        online_users_number = OnlineUsers.objects.first()
+        online_users_number.number = users_number
+        online_users_number.save()
 
 
     # Receive message from WebSocket
