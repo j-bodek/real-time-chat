@@ -164,6 +164,10 @@ textarea {
         height: calc(90% + 12px);
     }
 
+    button {
+        font-size: 2vh;
+    }
+
 
 }
 
@@ -176,6 +180,7 @@ textarea {
 
     button {
         height: 20%;
+        font-size: 3vh;
     }
 
     textarea {

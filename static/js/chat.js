@@ -8,6 +8,8 @@ const chatSocket = new WebSocket(
     '/'
 );
 
+window.scrollTo(0, document.querySelector('.chat_box'));
+
 // display typing info if user is typing
 let show_typing_info = function () {
     let classname = document.querySelector('#typing_info').className
@@ -72,6 +74,10 @@ chatSocket.onmessage = function (e) {
     if (data.message_type == 'typing') {
         // if message type is typing show typing message
         show_typing_info()
+        // scroll to bottom of chat box
+        let cont = document.getElementById('chat_box')
+        cont.scrollTop = cont.scrollHeight;
+
 
     } else if (data.message_type == 'sender' || data.message_type == 'receiver') {
         // if user send message
@@ -83,6 +89,10 @@ chatSocket.onmessage = function (e) {
         // append typing info after new message and set display to none
         typing_info.style.display = 'none'
         document.querySelector('#chat-log').appendChild(typing_info);
+        // scroll to bottom of chat box
+        let cont = document.getElementById('chat_box')
+        cont.scrollTop = cont.scrollHeight;
+
 
     } else if (data.message_type == 'connected_with_stranger') {
         // if connected with stranger change text and enable textarea
@@ -92,6 +102,10 @@ chatSocket.onmessage = function (e) {
         document.getElementById('user_info').innerHTML = 'Connected with stranger';
     } else if (data.message_type == 'disconnected_with_stranger') {
         display_disconnect()
+        // scroll to bottom of chat box
+        let cont = document.getElementById('chat_box')
+        cont.scrollTop = cont.scrollHeight;
+
     } else if (data.message_type == 'number_of_users') {
         // display number of online users
         number_of_users = data.number_of_users

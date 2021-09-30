@@ -10,12 +10,6 @@ from . models import PairedUser, ActiveUser, OnlineUsers
 
 
 
-def random_with_N_digits(n):
-    range_start = 10**(n-1)
-    range_end = (10**n)-1
-    return random.randint(range_start, range_end)
-
-
 class UserInfos():
 
     def save_paired_user(user, stranger):
@@ -106,7 +100,7 @@ class UserInfos():
 
 
     def send_typing_info(self):
-        user = self.scope['session']['seed']
+        user = self.channel_name
 
         # Send typing info to connected user
         async_to_sync(self.channel_layer.send)(
@@ -128,8 +122,8 @@ class UserInfos():
     def send_user_message(self, text_data_json):
         try:
             message = text_data_json['message']
-            user = self.scope['session']['seed']
-            message = str(user) + message
+            user = self.channel_name
+            message = str(user) + ' ' + message
 
             # Send message to connected user
             async_to_sync(self.channel_layer.send)(
@@ -153,11 +147,11 @@ class UserInfos():
 
 
 
+
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = 'room'
         self.room_group_name = 'chat_%s' % self.room_name
-        self.scope['session']['seed'] = random_with_N_digits(8)
     
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
@@ -228,10 +222,11 @@ class ChatConsumer(WebsocketConsumer):
     # Receive message from room group
     def chat_message(self, event):
 
-        sender = event['message'][0:8]
-        message = event['message'][8:]
+        # split after first space
+        sender = event['message'].split(' ',1)[0]
+        message = event['message'].split(' ',1)[1]
 
-        if self.scope['session']['seed'] == int(sender):
+        if self.channel_name == sender:
             message_type = 'sender'
         else:
             message_type = 'receiver'
@@ -246,7 +241,7 @@ class ChatConsumer(WebsocketConsumer):
     # Display if user is typing
     def typing(self, event):
 
-        if self.scope['session']['seed'] != int(event['message']):
+        if self.channel_name != event['message']:
             # Display that user is typing
             self.send(text_data=json.dumps({
                 'message_type': 'typing',
