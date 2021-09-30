@@ -163,4 +163,22 @@ textarea {
     .chat_box {
         height: calc(90% + 12px);
     }
+
+
+}
+
+/* if screen height is less then 300px */
+@media screen and (max-height: 300px) {
+
+    .chat_box {
+        height: 80%;
+    }
+
+    button {
+        height: 20%;
+    }
+
+    textarea {
+        height: calc(20% - 12px);
+    }
 }
