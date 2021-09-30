@@ -75,10 +75,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'livechatapp.routing.application'
+WSGI_APPLICATION = 'livechatapp.wsgi.application'
 
 #setting asgi application
-ASGI_APPLICATION = "livechatapp.asgi.application"
+ASGI_APPLICATION = "livechatapp.routing.application"
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
