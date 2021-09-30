@@ -1,8 +1,9 @@
 const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
 // open websocket connection to server
+let protocol = window.location.protocol == "https:" ? "wss" : "ws";
 const chatSocket = new WebSocket(
-    'ws://' +
+    protocol + '://' +
     window.location.host +
     '/ws/' +
     roomName +
