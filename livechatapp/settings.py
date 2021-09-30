@@ -92,27 +92,27 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'd24rokfhrqu2es',
-        'USER': 'yhwochwzvgxxxy',
-        'PASSWORD':'037afae75bde0e79ee4cbe42bcd726c98725a27c3cc436f1ec5def19dcb887c3',
-        'HOST':'ec2-63-33-239-176.eu-west-1.compute.amazonaws.com',
-        'POST':'5432',
-    }
-}
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'chat',
-#         'USER': 'postgres',
-#         'PASSWORD':'J@kub2002',
-#         'HOST':'localhost',
+#         'NAME': 'd24rokfhrqu2es',
+#         'USER': 'yhwochwzvgxxxy',
+#         'PASSWORD':'037afae75bde0e79ee4cbe42bcd726c98725a27c3cc436f1ec5def19dcb887c3',
+#         'HOST':'ec2-63-33-239-176.eu-west-1.compute.amazonaws.com',
 #         'POST':'5432',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'chat',
+        'USER': 'postgres',
+        'PASSWORD':'J@kub2002',
+        'HOST':'localhost',
+        'POST':'5432',
+    }
+}
 
 
 # Password validation
@@ -154,6 +154,10 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 django_heroku.settings(locals())
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
