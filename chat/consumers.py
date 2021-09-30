@@ -53,6 +53,7 @@ class UserInfos():
                 'type':'display_number_of_users'
             })
 
+
     def send_connected_info(self):
         async_to_sync(self.channel_layer.send)(
         self.channel_name,
@@ -169,7 +170,7 @@ class ChatConsumer(WebsocketConsumer):
         #if join room connect with stranger
         UserInfos.connect_with_user(self)
 
-        # send user number
+        # send user number to frontend
         UserInfos.send_user_number(self)
 
         # update number of online users
@@ -196,12 +197,12 @@ class ChatConsumer(WebsocketConsumer):
         )
 
         # update online user number
-
-        print('disconnect')
         users_number = OnlineUsers.objects.first().number - 1
         online_users_number = OnlineUsers.objects.first()
         online_users_number.number = users_number
         online_users_number.save()
+        # send user number to frontend
+        UserInfos.send_user_number(self)
 
 
     # Receive message from WebSocket
@@ -267,4 +268,8 @@ class ChatConsumer(WebsocketConsumer):
 
     
     def display_number_of_users(self, event):
-        print(event)
+        number_of_users = OnlineUsers.objects.first().number
+        self.send(text_data=json.dumps({
+            'message_type': 'number_of_users',
+            'number_of_users':number_of_users
+        }))

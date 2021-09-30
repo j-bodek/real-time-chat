@@ -92,6 +92,10 @@ chatSocket.onmessage = function (e) {
         document.getElementById('user_info').innerHTML = 'Connected with stranger';
     } else if (data.message_type == 'disconnected_with_stranger') {
         display_disconnect()
+    } else if (data.message_type == 'number_of_users') {
+        // display number of online users
+        number_of_users = data.number_of_users
+        document.getElementById('users_number').innerHTML = number_of_users.toString() + ' online users'
     }
 };
 

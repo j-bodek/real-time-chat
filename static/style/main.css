@@ -12,6 +12,15 @@ body {
     height: 100%;
 }
 
+.main_section #users_number {
+    color: #ccc;
+    text-align: right;
+    margin-right: 0;
+    margin-top: 2vh;
+    margin-right: 2vh;
+    font-size: 3vh;
+}
+
 .chat_section {
     height: 90%;
     max-width: 800px;
@@ -133,8 +142,25 @@ textarea {
 
 /* if screen width is less or equal then 800px */
 @media screen and (max-width: 800px) {
+
+    .main_section {
+        text-align: center;
+    }
+
+    .main_section #users_number {
+        color: #ccc;
+        text-align: center;
+        margin: auto;
+        font-size: 3vh;
+        margin-top: 2vh;
+    }
+
     .chat_section {
-        height: 100%;
-        padding-top: 5vh;
+        height: calc(100%-2vh);
+        padding-top: 2vh;
+    }
+
+    .chat_box {
+        height: calc(90% + 12px);
     }
 }
