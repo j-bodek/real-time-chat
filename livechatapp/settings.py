@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-4=alh9pij9xe1v))0!_xwo7lrql4nan6yrsnej7z!=g#cf=fo_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['masny-chat.herokuapp.com']
+ALLOWED_HOSTS = ['masny-chat.heroku.app']
 
 
 # Application definition
@@ -102,6 +102,17 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'chat',
+#         'USER': 'postgres',
+#         'PASSWORD':'J@kub2002',
+#         'HOST':'localhost',
+#         'POST':'5432',
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -143,6 +154,10 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 django_heroku.settings(locals())
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
