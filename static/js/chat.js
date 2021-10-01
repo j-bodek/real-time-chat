@@ -10,8 +10,6 @@ const chatSocket = new WebSocket(
     '/'
 );
 
-window.scrollTo(0, document.querySelector('.chat_box'));
-
 // display typing info if user is typing
 let show_typing_info = function () {
     let classname = document.querySelector('#typing_info').className
@@ -20,7 +18,7 @@ let show_typing_info = function () {
         // if typing_info is hidden change class to show
         document.querySelector('#typing_info').className = 'show';
         document.querySelector('#typing_info').style.display = 'block';
-        // Set timeout 
+        // Set timeout to one second
         typing_timeout = window.setTimeout(function () {
             document.querySelector('#typing_info').className = 'hide';
             document.querySelector('#typing_info').style.display = 'none';
@@ -37,12 +35,14 @@ let show_typing_info = function () {
     }
 }
 
-
+// display waiting info on chat log
 let display_waiting = function () {
+    // disable textarea and buttons during waiting
     document.getElementById('chat-message-input').disabled = true;
     document.getElementById('leave-chat').disabled = true;
     document.getElementById('chat-message-submit').disabled = true;
 
+    // display waiting info
     document.getElementById('user_info').innerHTML = 'Waiting for stranger...';
 
     // cleare chat log 
@@ -71,8 +71,10 @@ let display_disconnect = function () {
 
 
 let typing_timeout;
+// handle messages from websocket
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
+
     if (data.message_type == 'typing') {
         // if message type is typing show typing message
         show_typing_info()
@@ -82,7 +84,7 @@ chatSocket.onmessage = function (e) {
 
 
     } else if (data.message_type == 'sender' || data.message_type == 'receiver') {
-        // if user send message
+        // get message content and display it on chat log
         let typing_info = document.querySelector('#typing_info')
         let message = document.createElement("li")
         message.setAttribute("class", data.message_type);
@@ -102,6 +104,7 @@ chatSocket.onmessage = function (e) {
         document.getElementById('leave-chat').disabled = false;
         document.getElementById('chat-message-submit').disabled = false;
         document.getElementById('user_info').innerHTML = 'Connected with stranger';
+
     } else if (data.message_type == 'disconnected_with_stranger') {
         display_disconnect()
         // scroll to bottom of chat box
@@ -131,24 +134,28 @@ document.querySelector('#chat-message-input').onkeyup = function (e) {
     }
 };
 
+// send message after clicking submit button
 document.querySelector('#chat-message-submit').onclick = function (e) {
     const messageInputDom = document.querySelector('#chat-message-input');
     const message = messageInputDom.value;
     chatSocket.send(JSON.stringify({
         'message': message
     }));
+    // update textarea value
     messageInputDom.value = '';
 };
 
-
+// leave chat after clicking button
 document.querySelector('#leave-chat').onclick = (e) => {
     let type = e.target.name;
 
     if (type == 'leave') {
+        // ensure if user wants to disconnect
         e.target.name = 'ensure'
         e.target.innerHTML = 'Are you sure?'
 
     } else if (type == 'ensure') {
+        // if user disconnect chane button content to connect to new stranger
         e.target.name = 'connect_new'
         e.target.innerHTML = 'Connect to new stranger'
         // create disconnect info

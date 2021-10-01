@@ -147,8 +147,9 @@ class UserInfos():
 
 
 
-
+# define all actions after websocket connection
 class ChatConsumer(WebsocketConsumer):
+    
     def connect(self):
         self.room_name = 'room'
         self.room_group_name = '%s' % self.room_name
@@ -207,9 +208,13 @@ class ChatConsumer(WebsocketConsumer):
             if text_data_json['action'] == 'typing':
                 #send typing info
                UserInfos.send_typing_info(self)
+
             if text_data_json['action'] == 'leave':
+                # disconnect with stranger (not with server)
                 UserInfos.disconnect_with_stranger(self)
+
             if text_data_json['action'] == 'connect_new':
+                # connect with new stranger
                 UserInfos.connect_with_user(self)
             
             
@@ -231,7 +236,7 @@ class ChatConsumer(WebsocketConsumer):
         else:
             message_type = 'receiver'
 
-        # Send message to WebSocket
+        # Send message to WebSocket and then handle it with javascript
         self.send(text_data=json.dumps({
             'message_type': message_type,
             'message': message
@@ -242,7 +247,7 @@ class ChatConsumer(WebsocketConsumer):
     def typing(self, event):
 
         if self.channel_name != event['message']:
-            # Display that user is typing
+            # Send info that user is typing
             self.send(text_data=json.dumps({
                 'message_type': 'typing',
                 'message': True
